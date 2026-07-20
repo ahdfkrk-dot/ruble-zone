@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рублевая зона — Правила и карты</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #1a1a1a; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1e3a8a 0%, #2e8b57 100%); color: white; padding: 32px 16px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .header p { font-size: 16px; opacity: 0.95; }
+        .nav-tabs { background: white; border-bottom: 3px solid #e5e7eb; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; overflow-x: auto; }
+        .nav-tab { padding: 16px 24px; background: none; border: none; font-size: 15px; font-weight: 600; color: #6b7280; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+        .nav-tab:hover { color: #1e3a8a; background: #f9fafb; }
+        .nav-tab.active { color: #1e3a8a; border-bottom-color: #2e8b57; background: #eff6ff; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px 16px; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 24px; }
+        .card-item { background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 16px; transition: all 0.2s; position: relative; overflow: hidden; }
+        .card-item:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); border-color: #2e8b57; }
+        .card-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+        .card-item.income::before { background: #2e8b57; }
+        .card-item.expense::before { background: #dc2626; }
+        .card-item.asset::before { background: #1e3a8a; }
+        .card-item.neutral::before { background: #6b7280; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .card-number { display: inline-flex; align-items: center; gap: 6px; background: #1e3a8a; color: white; padding: 4px 12px; border-radius: 4px; font-size: 13px; font-weight: 700; }
+        .card-marker { font-size: 14px; font-weight: 700; }
+        .card-name { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; line-height: 1.3; }
+        .card-effect { font-size: 14px; color: #2e8b57; font-weight: 600; margin-bottom: 8px; padding: 8px; background: #f0fdf4; border-radius: 4px; border-left: 3px solid #2e8b57; }
+        .card-effect.negative { color: #dc2626; background: #fef2f2; border-left-color: #dc2626; }
+        .card-flavor { font-size: 13px; color: #6b7280; font-style: italic; line-height: 1.4; }
+        .card-category { display: inline-block; margin-top: 12px; padding: 4px 10px; background: #f3f4f6; color: #4b5563; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .search-box { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .search-input { width: 100%; padding: 14px 18px; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 16px; transition: all 0.2s; }
+        .search-input:focus { outline: none; border-color: #2e8b57; box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1); }
+        .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+        .filter-btn { padding: 10px 18px; border: 2px solid #e5e7eb; background: white; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: #4b5563; }
+        .filter-btn:hover { border-color: #2e8b57; color: #1e3a8a; }
+        .filter-btn.active { background: #1e3a8a; color: white; border-color: #1e3a8a; }
+        .stats { text-align: center; padding: 16px; background: #eff6ff; border-radius: 6px; margin: 24px 0; font-weight: 600; color: #1e3a8a; }
+        .rules-content { background: white; padding: 32px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .rules-content h2 { font-size: 24px; color: #1e3a8a; margin: 32px 0 16px 0; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+        .rules-content h3 { font-size: 18px; color: #2e8b57; margin: 24px 0 12px 0; font-weight: 700; }
+        .rules-content p { margin-bottom: 12px; line-height: 1.7; }
+        .rules-content ul, .rules-content ol { margin: 12px 0 12px 24px; line-height: 1.7; }
+        .rules-content li { margin-bottom: 8px; }
+        .rules-content code { background: #f3f4f6; padding: 3px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; color: #dc2626; font-weight: 600; }
+        .rules-content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+        .rules-content th, .rules-content td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; }
+        .rules-content th { background: #f9fafb; font-weight: 700; color: #1e3a8a; }
+        .rules-content tr:hover { background: #f9fafb; }
+        .hidden { display: none; }
+        @media (max-width: 768px) { .header h1 { font-size: 24px; } .cards-grid { grid-template-columns: 1fr; } .rules-content { padding: 20px; } .nav-tab { padding: 12px 16px; font-size: 14px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🇷🇺 РУБЛЕВАЯ ЗОНА</h1>
+        <p>Настольная игра о финансовой жизни в России</p>
+    </div>
+    <div class="nav-tabs">
+        <div class="nav-container">
+            <button class="nav-tab active" onclick="showSection('cards', this)">🃏 Карты (288)</button>
+            <button class="nav-tab" onclick="showSection('rules', this)">📖 Правила</button>
+            <button class="nav-tab" onclick="showSection('professions', this)">👔 Профессии</button>
+            <button class="nav-tab" onclick="showSection('insurance', this)">🛡️ Страховки</button>
+        </div>
+    </div>
+    <div class="container">
+        <div id="cards" class="section active">
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Поиск по номеру карты или названию..." oninput="filterCards()">
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Все карты</button>
+                    <button class="filter-btn" data-filter="small" onclick="setFilter('small')">Мелкие возможности</button>
+                    <button class="filter-btn" data-filter="big" onclick="setFilter('big')">Крупные возможности</button>
+                    <button class="filter-btn" data-filter="market" onclick="setFilter('market')">Рынок</button>
+                    <button class="filter-btn" data-filter="crypto" onclick="setFilter('crypto')">Крипта</button>
+                    <button class="filter-btn" data-filter="expense" onclick="setFilter('expense')">Траты</button>
+                    <button class="filter-btn" data-filter="event" onclick="setFilter('event')">События</button>
+                    <button class="filter-btn" data-filter="dream" onclick="setFilter('dream')">Мечты</button>
+                    <button class="filter-btn" data-filter="global" onclick="setFilter('global')">Глобальный рынок</button>
+                </div>
+            </div>
+            <div class="stats" id="statsText">Загрузка...</div>
+            <div class="cards-grid" id="cardsList"></div>
+        </div>
+        <div id="rules" class="section">
+            <div class="rules-content">
+                <h2>🎯 Цель игры</h2>
+                <p>Игрок побеждает, если он <strong>ПЕРВЫМ</strong> выполнил два условия:</p>
+                <ol>
+                    <li><strong>Полностью закрыл все долги</strong> (Пассивы = 0 ₽)</li>
+                    <li><strong>Выполнил условие своей тайной карты Мечты</strong></li>
+                </ol>
+                <h2>⏱️ Таймер и финальный подсчёт</h2>
+                <p>Перед игрой засекается <strong>150 минут</strong> на телефоне. Когда звонит таймер — текущий игрок завершает ход, и игра заканчивается.</p>
+                <p>Если никто не исполнил Мечту, побеждает игрок с наибольшим <strong>Чистым Капиталом</strong>:</p>
+                <p><code>(Наличные + Активы) − Долги</code></p>
+                <h2>🎲 Ход игрока</h2>
+                <ol>
+                    <li><strong>Управление финансами:</strong> запрос зарплаты, покупка/продажа активов, кредиты, страховки</li>
+                    <li><strong>Бросок кубика</strong> и перемещение фишки</li>
+                    <li><strong>Действие на клетке:</strong> вытянуть карту и выполнить эффект</li>
+                </ol>
+                <h2>💰 Получение зарплаты</h2>
+                <p>Зарплата выплачивается при <strong>прохождении или попадании</strong> на клетку «Зарплата». Запросить её нужно <strong>до броска кубика следующим игроком</strong>, иначе право сгорает.</p>
+                <h2>💳 Частично-досрочное погашение</h2>
+                <p>В любой момент своего хода можно внести любую сумму в счёт долга.</p>
+                <p><strong>Формула перерасчёта платежа:</strong></p>
+                <p><code>Новый платёж = (Остаток долга / Изначальный долг) × Изначальный платёж</code></p>
+                <h2>🗺️ Игровое поле</h2>
+                <h3>🔴 Фаза 1: Внутренний круг (36 клеток)</h3>
+                <p>Условие <strong>ПРОРЫВА</strong> на внешний круг:</p>
+                <ol>
+                    <li>Пассивы = 0 ₽</li>
+                    <li>Пассивный доход ≥ 100 000 ₽/мес</li>
+                </ol>
+                <h3>🟢 Фаза 2: Внешний круг (48 клеток)</h3>
+                <p>Здесь можно брать ипотеку на активы с пассивным доходом, если чистый поток остаётся положительным.</p>
+                <h2>🏆 Проверка Мечты</h2>
+                <p>На внешнем круге игрок объявляет: <strong>«Я исполнил Мечту!»</strong>, показывает карту и отчёт.</p>
+                <p><strong>Штраф за ложную тревогу:</strong> 500 000 ₽. Если денег нет — Финансовый крах.</p>
+                <h2>💸 Кассовый разрыв и банкротство</h2>
+                <p>Если наличные ушли в минус, игрок обязан:</p>
+                <ol>
+                    <li>Занять у другого игрока</li>
+                    <li>Продать активы (Банку за 50%, игрокам — по договорной цене)</li>
+                    <li>Взять кредит (платёж 10% от суммы)</li>
+                </ol>
+                <p>Если ничего не помогает — <strong>Финансовый крах</strong>: игрок выбывает.</p>
+                <h2>🤝 Продажа активов</h2>
+                <ul>
+                    <li><strong>Банку:</strong> 50% от номинала (кроме золота — 100%)</li>
+                    <li><strong>Игрокам:</strong> по любой договорной цене</li>
+                    <li><strong>Карты возможностей:</strong> можно продать другим игрокам</li>
+                </ul>
+            </div>
+        </div>
+        <div id="professions" class="section">
+            <div class="rules-content">
+                <h2>👔 Профессии</h2>
+                <table>
+                    <thead><tr><th>Профессия</th><th>Зарплата</th><th>Ипотека</th><th>Платёж</th><th>Расходы</th><th>Старт</th></tr></thead>
+                    <tbody id="professionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="insurance" class="section">
+            <div class="rules-content">
+                <h2>🛡️ Страховки</h2>
+                <table>
+                    <thead><tr><th>Тип</th><th>Покупка</th><th>Расход/мес</th><th>Что блокирует</th></tr></thead>
+                    <tbody>
+                        <tr><td>🚗 КАСКО</td><td>20 000 ₽</td><td>5 000 ₽</td><td>ДТП, эвакуатор, угон, дерево, пожар, вандализм, град</td></tr>
+                        <tr><td>🏥 ДМС</td><td>15 000 ₽</td><td>3 000 ₽</td><td>Зубы, анализы, вызов врача, стационар, операция</td></tr>
+                        <tr><td>🏠 Недвижимость</td><td>10 000 ₽</td><td>2 000 ₽</td><td>Потоп, пожар, взлом, порча, пожарная проверка, кибератака</td></tr>
+                        <tr><td>🔐 Крипто-сейф</td><td>20 000 ₽</td><td>0 ₽</td><td>Взлом биржи, телефона, утеря сид-фразы, крах биржи</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        const allCards = [
+            {n:1, name:"Флиппинг телефонов", effect:"+15 000 ₽ разово", flavor:"Трещина на экране — это не дефект, а винтажный дизайн.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:2, name:"Перепродажа кроссовок", effect:"+15 000 ₽ разово", flavor:"Оригинальность подтверждена только вашей верой в лучшее.", cat:"small", type:"income", marker:"🟢"},
+            {n:3, name:"Репетиторство онлайн", effect:"+5 000 ₽/мес", flavor:"Объясняете алгебру так, что даже кот понимает производные.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:4, name:"Фриланс-дизайн", effect:"+20 000 ₽ разово", flavor:"Пишете тексты про уникальные преимущества, которые читают только роботы.", cat:"small", type:"income", marker:"👤"},
+            {n:5, name:"Сдача комнаты", effect:"+10 000 ₽/мес", flavor:"Бабушкина комната приносит доход. Дух предков одобряет капитализм.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:6, name:"Перепродажа шин", effect:"+15 000 ₽ разово", flavor:"Круглый год кто-то где-то обязательно прокалывает колесо.", cat:"small", type:"income", marker:"🟢"},
+            {n:7, name:"Мелкий опт", effect:"+8 000 ₽/мес", flavor:"Классическая схема из 90-х, которая всё ещё работает.", cat:"small", type:"asset", marker:"👤"},
+            {n:8, name:"Ремонт телефонов", effect:"+7 000 ₽/мес", flavor:"Теперь вы чините технику всем соседям, кроме себя.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:9, name:"Копирайтинг", effect:"+6 000 ₽/мес", flavor:"Ваша основная аудитория — это поисковые роботы.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:10, name:"Рукоделие", effect:"+5 000 ₽/мес", flavor:"Вы вяжете, ненавидите процесс, но деньги исправно капают.", cat:"small", type:"asset", marker:"👤"},
+            {n:11, name:"Продажа ёлок", effect:"+15 000 ₽ разово", flavor:"Вы рубите ёлки, считаете деньги, игнорируете экологов.", cat:"small", type:"income", marker:"🟢"},
+            {n:12, name:"Перепродажа билетов на концерты", effect:"+7 000 ₽ разово", flavor:"Родина-мать зовёт продать этот билет втридорога.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:13, name:"Сдача гаража", effect:"+4 000 ₽/мес", flavor:"Лишь бы платили и не спрашивали, зачем им ваш старый гараж.", cat:"small", type:"asset", marker:"🟢"},
+            {n:14, name:"Дропшиппинг чехлов", effect:"+6 000 ₽/мес", flavor:"Чехлы с котиками — это вечная классика и вечные деньги.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:15, name:"Игровые аккаунты", effect:"+10 000 ₽ разово", flavor:"Две тысячи часов в игре окупились. Жена ушла, зато аккаунт стоит.", cat:"small", type:"income", marker:"🟢"},
+            {n:16, name:"Мелкий ремонт квартир", effect:"+12 000 ₽/мес", flavor:"Начали с поклейки обоев, закончите нервным срывом.", cat:"small", type:"asset", marker:"🟢"},
+            {n:17, name:"Продажа рассады", effect:"+8 000 ₽ разово", flavor:"Ваша огородная империя начинается с продажи помидоров.", cat:"small", type:"income", marker:"👤"},
+            {n:18, name:"Перепродажа бу книг", effect:"+4 000 ₽ разово", flavor:"Он явно соврал, вы всё равно купили, и это прекрасная классика.", cat:"small", type:"income", marker:"🟢"},
+            {n:19, name:"Клининг у тёщи", effect:"+9 000 ₽/мес", flavor:"Вы моете полы за деньги и с чувством глубокого удовлетворения.", cat:"small", type:"asset", marker:"👤"},
+            {n:20, name:"Б/у запчасти", effect:"+7 000 ₽/мес", flavor:"Звучит гордо, пахнет бензином и лёгким отчаянием.", cat:"small", type:"asset", marker:"🟢"},
+            {n:21, name:"Аренда велосипедов", effect:"+3 000 ₽/мес", flavor:"Тёма уже прогорел на этой идее, но вы-то точно знаете, что делаете.", cat:"small", type:"asset", marker:"🟢"},
+            {n:22, name:"Корейская косметика", effect:"+8 000 ₽/мес", flavor:"Она соврала про оригинальность, вы продали, и все остались в выигрыше.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:23, name:"Фотограф на выходных", effect:"+15 000 ₽ разово", flavor:"Романтики здесь нет, есть только деньги и коты в шляпах.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:24, name:"Корм для животных", effect:"+5 000 ₽/мес", flavor:"Теперь вы официально раб кота, но хотя бы с прибылью.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:25, name:"Перепродажа инструментов", effect:"+8 000 ₽ разово", flavor:"Эта дрель переживёт трёх владельцев и, возможно, вас тоже.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:26, name:"Кейтеринг", effect:"+10 000 ₽/мес", flavor:"Хлеб, колбаса и дежурная улыбка. Настоящий бизнес.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:27, name:"Продажа цветов", effect:"+6 000 ₽/мес", flavor:"Розы вянут быстрее, чем энтузиазм к этой бизнес-идее, но маржа того стоит.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:28, name:"Мелкая электроника", effect:"+9 000 ₽/мес", flavor:"Вечный спрос на зарядки и вечное китайское качество.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:29, name:"Услуги грузчиков", effect:"+8 000 ₽ разово", flavor:"Вы буквально грузите чужие проблемы на свои плечи.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:30, name:"Стройматериалы", effect:"+11 000 ₽/мес", flavor:"Цемент, песок и ваши нервы — всё для идеального ремонта.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:31, name:"Автозапчасти", effect:"+10 000 ₽/мес", flavor:"Или друг подсказал? Неважно, главное — стабильная прибыль.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:32, name:"Аренда оборудования", effect:"+7 000 ₽/мес", flavor:"Бетономешалка работает, пока вы спите. Настоящая мечта.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:33, name:"Английский по Zoom", effect:"+8 000 ₽/мес", flavor:"Современная классика, от которой нервно курят крупные платформы.", cat:"small", type:"asset", marker:"🟢"},
+            {n:34, name:"Цифровые товары", effect:"+5 000 ₽/мес", flavor:"Шаблоны и гайды лежат в облаке, а деньги падают на карту.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:35, name:"Перепродажа мебели", effect:"+13 000 ₽ разово", flavor:"Бывшая в употреблении мебель как новая, только без шведского акцента.", cat:"small", type:"income", marker:"👤"},
+            {n:36, name:"Няня на вечер", effect:"+5 000 ₽ разово", flavor:"Любовь — это прекрасно, но няня за деньги надёжнее.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:37, name:"Товары с Авито", effect:"+6 000 ₽/мес", flavor:"Продаёте хлам, покупаете хлам. Идеальный круговорот в природе.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:38, name:"Спортинвентарь", effect:"+7 000 ₽/мес", flavor:"Гантели, которые купили в январе, с энтузиазмом продают в марте.", cat:"small", type:"asset", marker:"🟢"},
+            {n:39, name:"Услуги курьера", effect:"+8 000 ₽/мес", flavor:"Доставка за 30 минут или бесплатно. Как повезёт с пробками.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:40, name:"Ремонт одежды", effect:"+4 000 ₽/мес", flavor:"Люди рвут одежду, а вы её чините. Вечный и надёжный цикл.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:41, name:"Перепродажа смартфонов", effect:"+10 000 ₽ разово", flavor:"Купили с разбитым экраном, починили, продали. Вы просто гений.", cat:"small", type:"income", marker:"🟢👤"},
+            {n:42, name:"Репетитор по ЕГЭ", effect:"+7 000 ₽/мес", flavor:"Родители платят за надежду, дети страдают от знаний, вы страдаете от обоих.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:43, name:"Услуги садовника", effect:"+7 000 ₽/мес", flavor:"Вы стрижёте газоны, дачники довольны, а вы стали рабом лейки.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:44, name:"Фриланс-переводы", effect:"+8 000 ₽/мес", flavor:"Переводите с английского на русский и обратно исключительно за деньги.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:45, name:"Аренда парковочного места", effect:"+4 000 ₽/мес", flavor:"Место во дворе — это золото в час пик и поле для ежедневной войны.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:46, name:"Перепродажа детских вещей", effect:"+5 000 ₽/мес", flavor:"Дети выросли, вещи отправились на Авито. Бесконечный цикл жизни.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:47, name:"Мастер маникюра", effect:"+9 000 ₽/мес", flavor:"Ногти — это не роскошь, а вполне легальный способ заработка.", cat:"small", type:"asset", marker:"🟢👤"},
+            {n:48, name:"Варенье и соленья", effect:"+4 000 ₽/мес", flavor:"Бабушкин рецепт стал хитом на рынке и главной причиной для споров с соседями.", cat:"small", type:"asset", marker:"👤"},
+            {n:49, name:"1-к квартира (регион)", effect:"2 500 000 ₽ | +25 000 ₽/мес", flavor:"Соседи сверлят в 7 утра, вы сверлите в ответ. Это называется здоровая коммуникация.", cat:"big", type:"asset", marker:"🟢"},
+            {n:50, name:"Студия под сдачу", effect:"3 000 000 ₽ | +30 000 ₽/мес", flavor:"20 метров, но своих. И чужих тоже, если сдавать посуточно.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:51, name:"Франшиза ПВЗ Wildberries", effect:"500 000 ₽ | +40 000 ₽/мес", flavor:"Теперь вы официально часть народной системы выдачи заказов.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:52, name:"Франшиза кофейни", effect:"800 000 ₽ | +60 000 ₽/мес", flavor:"Вы продаёте воду со вкусом кофейных зёрен по цене жидкого золота.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:53, name:"Доля в IT-стартапе", effect:"1 000 000 ₽ | +50 000 ₽/мес", flavor:"Вдруг взлетит, а вдруг нет? Риск — дело благородное и нервное.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:54, name:"Коммерческое помещение", effect:"4 000 000 ₽ | +45 000 ₽/мес", flavor:"Первая линия и высокий трафик всегда идут в комплекте с высокой ценой.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:55, name:"Майнинг-ферма (малая)", effect:"600 000 ₽ | +35 000 ₽/мес", flavor:"Счёт за электричество растёт быстрее курса биткоина, но вы верите в светлое будущее.", cat:"big", type:"asset", marker:"🟢"},
+            {n:56, name:"Земельный участок (ИЖС)", effect:"1 500 000 ₽ | 0 ₽/мес", flavor:"Земля всегда в цене, даже если на ней пока абсолютно ничего нет.", cat:"big", type:"neutral", marker:"⚪👤"},
+            {n:57, name:"Складское помещение", effect:"3 500 000 ₽ | +40 000 ₽/мес", flavor:"Склады — это новая нефть, только пахнет она совершенно иначе.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:58, name:"Крупный пакет облигаций", effect:"1 000 000 ₽ | +10 000 ₽/мес", flavor:"Надёжно, как сберкнижка у бабушки, и так же скучно.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:59, name:"2-к квартира (в ипотеку)", effect:"Взнос 1 млн | +50 000 ₽/мес | Долг 5 млн | Платёж 40к", flavor:"Двушка для тех, кто любит простор, терпение и долгосрочные долги.", cat:"big", type:"asset", marker:"👤"},
+            {n:60, name:"Магазин у дома", effect:"2 000 000 ₽ | +80 000 ₽/мес", flavor:"Хлеб, молоко и пиво обеспечивают вечный спрос и вечные проверки.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:61, name:"Доля в ресторане", effect:"1 500 000 ₽ | +70 000 ₽/мес", flavor:"Ресторан — это не только еда и эмоции, но и постоянная головная боль.", cat:"big", type:"asset", marker:"👤"},
+            {n:62, name:"Крипто-фонд", effect:"1 200 000 ₽ | +45 000 ₽/мес", flavor:"Диверсифицированный крипто-портфель означает диверсифицированный стресс.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:63, name:"Салон красоты", effect:"1 800 000 ₽ | +90 000 ₽/мес", flavor:"Красота требует денег и при этом исправно их приносит. Парадокс.", cat:"big", type:"asset", marker:"🟢"},
+            {n:64, name:"Офисное помещение", effect:"6 000 000 ₽ | +60 000 ₽/мес", flavor:"Бизнес-центр класса B+ неизбежно привлекает арендаторов класса C.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:65, name:"Золотые слитки", effect:"2 000 000 ₽ | 0 ₽/мес (Продажа Банку: 100%)", flavor:"Золото — это вечная валюта и вечный соблазн для недобрых людей.", cat:"big", type:"neutral", marker:"⚪"},
+            {n:66, name:"Доля в сельхозбизнесе", effect:"1 000 000 ₽ | +45 000 ₽/мес", flavor:"Земля кормит, и инвесторов тоже, но только в хорошие годы.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:67, name:"Загородный дом (в ипотеку)", effect:"Взнос 1.5 млн | +75 000 ₽/мес | Долг 7 млн | Платёж 55к", flavor:"Дом, баня, шашлыки и постоянная борьба с арендаторами, забывающими про коммуналку.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:68, name:"Крупный пакет акций РФ", effect:"1 500 000 ₽ | +15 000 ₽/мес", flavor:"Дивиденды — это пассивный доход в чистом, а иногда и в грязном виде.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:69, name:"Доля в венчурном фонде", effect:"800 000 ₽ | +35 000 ₽/мес", flavor:"Венчур — это высокий доход, огромный риск и гарантированные седые волосы.", cat:"big", type:"asset", marker:"👤"},
+            {n:70, name:"Франшиза пекарни", effect:"1 200 000 ₽ | +75 000 ₽/мес", flavor:"Свежий хлеб всегда в цене, как и свежие кредиты на его производство.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:71, name:"Торговый автомат (вендинг)", effect:"400 000 ₽ | +30 000 ₽/мес", flavor:"Кофе и снеки приносят пассивный доход круглосуточно, как и вандализм.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:72, name:"Инвестиции в ПИФы", effect:"900 000 ₽ | +20 000 ₽/мес", flavor:"Паевые фонды — это идеальная диверсификация для осторожных и скучных людей.", cat:"big", type:"asset", marker:"🟢👤"},
+            {n:73, name:"Падение цен на вторичку", effect:"Номинал недвижимости −20%", flavor:"Ипотечная квартира теперь стоит меньше, чем остаток вашего долга. Поздравляем.", cat:"market", type:"expense", marker:"👥"},
+            {n:74, name:"ЖКХ решило, что вы богаты", effect:"Все платят 10 000 ₽", flavor:"Платёжка пришла, а шок почему-то уже не наступает.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:75, name:"Инфляция", effect:"Расходы +5 000 ₽/мес навсегда", flavor:"Цены на продукты растут со скоростью света, а зарплата ползёт пешком.", cat:"market", type:"expense", marker:"🔴"},
+            {n:76, name:"Налоговая проверка", effect:"Штраф 20 000 ₽ (доход >100к) или 5 000 ₽", flavor:"Налоговая — это ваш самый внимательный и настойчивый друг.", cat:"market", type:"expense", marker:"🔴"},
+            {n:77, name:"Рост ключевой ставки", effect:"Новые кредиты — 20%", flavor:"Ставка растёт, а ваши финансовые мечты стремительно падают.", cat:"market", type:"expense", marker:"👥"},
+            {n:78, name:"Бум аренды: удвоение дохода", effect:"Удвоить пассивный доход от недвижимости", flavor:"Арендаторы внезапно стали щедрыми, или им просто больше некуда идти.", cat:"market", type:"income", marker:"🟢👥"},
+            {n:79, name:"Проверка бизнеса", effect:"Бизнес −15 000 ₽, остальные +5 000 ₽", flavor:"Проверка пришла, проверила и забрала деньги.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:80, name:"Бензин дорожает", effect:"Расходы +5 000 ₽", flavor:"Заправка превратилась в роскошь, сравнимую с зарубежными путешествиями.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:81, name:"Кризис ликвидности", effect:"Долг >100к: продай актив или плати 50к", flavor:"Деньги любят тишину, а долги любят шум, панику и крики.", cat:"market", type:"expense", marker:"🔴"},
+            {n:82, name:"Индексация зарплат", effect:"Все получают +15 000 ₽", flavor:"Зарплата внезапно выросла, но вы знаете, что это ненадолго.", cat:"market", type:"income", marker:"🟢👥"},
+            {n:83, name:"Рынок недвижимости на замке", effect:"Продажа недвижимости — только Банку", flavor:"Невозможно выселить, невозможно продать, невозможно нормально жить.", cat:"market", type:"neutral", marker:"⚪"},
+            {n:84, name:"Массовые неплатежи", effect:"Нет дохода от аренды в этот ход", flavor:"Арендаторы дружно решили, что заплатят как-нибудь потом.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:85, name:"Подорожание стройматериалов", effect:"Покупка +20%", flavor:"Любой ремонт — это прямая инвестиция в ваши седые волосы.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:86, name:"Налог на роскошь", effect:"Активы >3 млн — плати 30 000 ₽", flavor:"Богатство обязывает платить налоги и прятать деньги ещё тщательнее.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:87, name:"Дефицит кадров", effect:"Бизнес платит 10 000 ₽", flavor:"Сотрудники хотят получать больше, а вы хотите платить меньше.", cat:"market", type:"expense", marker:"👥"},
+            {n:88, name:"Падение спроса на услуги", effect:"Доход от услуг −50% на след. зарплату", flavor:"Клиенты экономят абсолютно на всём, кроме алкоголя.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:89, name:"Реструктуризация долгов", effect:"Тело кредита −20%", flavor:"Банк редко идёт навстречу, но если пошёл, то заберёт своё позже.", cat:"market", type:"neutral", marker:"⚪"},
+            {n:90, name:"Закрытие рынков", effect:"Торговля — только с Банком", flavor:"Советский союз вернулся, но только в вашем инвестиционном портфеле.", cat:"market", type:"neutral", marker:"👥"},
+            {n:91, name:"Субсидии от государства", effect:"Бизнес получает 20 000 ₽", flavor:"Государственная поддержка существует, но почти всегда только на словах.", cat:"market", type:"income", marker:"🟢"},
+            {n:92, name:"Гречка снова стала роскошью", effect:"Все платят 8 000 ₽", flavor:"Продукты дорожают, вы худеете, и исключительно от горя.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:93, name:"Проверка пожарной безопасности", effect:"−10 000 ₽ (🏠 Страховка: 0 ₽)", flavor:"Инспектор просто ищет, к чему бы ему официально придраться.", cat:"market", type:"expense", marker:"👥"},
+            {n:94, name:"Отмена льгот", effect:"Дети = +5 000 ₽ налога", flavor:"Отмена льгот означает, что теперь вы должны платить за всё и сразу.", cat:"market", type:"expense", marker:"🔴👥"},
+            {n:95, name:"Золото снова в цене", effect:"Золото +50%", flavor:"Инвесторы радостно ликуют, а воры потирают руки в предвкушении.", cat:"market", type:"income", marker:"🟢👥"},
+            {n:96, name:"Бесплатная юрпомощь", effect:"Списание долга до 50 000 ₽", flavor:"Бесплатная юридическая помощь — это прекрасно, когда она действительно случается.", cat:"market", type:"income", marker:"🟢👥"},
+            {n:97, name:"Экономический рост", effect:"Пассивный доход +20% навсегда", flavor:"Экономика растёт, кошелёк толстеет. Редко, но зато очень метко.", cat:"market", type:"income", marker:"🟢👥"},
+            {n:98, name:"Халвинг Биткоина", effect:"Крипта +20%", flavor:"Все вокруг богатеют, кроме тех, кто продал всё на прошлой неделе.", cat:"crypto", type:"income", marker:"🟢"},
+            {n:99, name:"Обвал альткоинов", effect:"Крипта (кроме BTC) −50%", flavor:"Обвал — это неизбежный финал, когда вы слишком сильно верили в чудо.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:100, name:"Взлом биржи", effect:"Потеря 1 лота (🔐 Сейф: 0)", flavor:"Взлом случается именно тогда, когда вы были уверены в своей безопасности.", cat:"crypto", type:"expense", marker:"🔴"},
+            {n:101, name:"Запрет криптовалют", effect:"Нельзя покупать крипту 2 хода", flavor:"Запрет — это всегда больно, особенно когда вы так сильно хотели купить.", cat:"crypto", type:"neutral", marker:"⚪👥"},
+            {n:102, name:"Рост стейблкоинов", effect:"Плати 5 000 ₽", flavor:"Стейблкоины хороши тем, что вы не теряете, но и заработать на них не получается.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:103, name:"Блокчейн лёг", effect:"Плати 10 000 ₽", flavor:"Сбой сети — это момент, когда всё работало идеально, а потом просто перестало.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:104, name:"Телефон взломан", effect:"Потеря всей крипты (🔐 Сейф: 1 лот)", flavor:"Крипта бесследно исчезла, а вы остались в состоянии глубокого шока.", cat:"crypto", type:"expense", marker:"🔴"},
+            {n:105, name:"12 слов, которые вы запомнили", effect:"Потеря 50% крипты (🔐 Сейф: 0)", flavor:"Вы были уверены, что запомнили сид-фразу, но память подвела в самый неподходящий момент.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:106, name:"TON взлетает", effect:"+1 лот TON, плати 5 000 ₽", flavor:"Все вокруг покупают, и вы, конечно же, решаете присоединиться к толпе.", cat:"crypto", type:"income", marker:"🟢👥"},
+            {n:107, name:"Обещали x100. Дали x0.", effect:"Потеря 20 000 ₽", flavor:"Вам обещали полёт на Луну, а в итоге просто красиво и быстро забрали деньги.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:108, name:"Эфириум снова в моде", effect:"Эфир +50%", flavor:"Рост курса всегда наступает ровно в тот момент, когда все уже перестали верить.", cat:"crypto", type:"income", marker:"👥"},
+            {n:109, name:"Ton упал", effect:"Ton −50%", flavor:"Держатели в глубоком шоке, и вы, к сожалению, не исключение.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:110, name:"Видеокарты — новая нефть", effect:"Плати 50 000 ₽", flavor:"Ажиотаж заставляет всех скупать оборудование, включая вас.", cat:"crypto", type:"expense", marker:"👥"},
+            {n:111, name:"Дефицит видеокарт", effect:"Нельзя покупать крипту 2 хода", flavor:"Дефицит — это когда вы очень хотите купить, но физически не можете.", cat:"crypto", type:"neutral", marker:"⚪"},
+            {n:112, name:"Твит Илона Маска", effect:"Бросок кубика: 1-3 крипта −20%, 4-6 крипта +20%", flavor:"Один неудачный твит миллиардера, и ваш портфель делает сальто-мортале.", cat:"crypto", type:"neutral", marker:"⚪👥"},
+            {n:113, name:"ЦБ взял крипту под контроль", effect:"Налог 15 000 ₽", flavor:"Регулирование означает, что вы всё ещё можете торговать, но теперь обязаны платить.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:114, name:"Сибирский майнинг", effect:"−10 000 ₽, доход +20%", flavor:"Дёшево, сердито и невероятно холодно. Идеальная схема.", cat:"crypto", type:"income", marker:"🟢👥"},
+            {n:115, name:"Отключение электричества", effect:"Нет дохода 1 ход", flavor:"Майнинг встал, электричество отключили, а деньги просто испарились.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:116, name:"Хак смарт-контракта", effect:"Потеря 15 000 ₽", flavor:"Деньги бесследно ушли, а вместе с ними и ваша вера в технологии.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:117, name:"Листинг на бирже", effect:"Крипта +20%", flavor:"Успешный листинг — это момент, когда все начинают судорожно скупать актив.", cat:"crypto", type:"income", marker:"🟢👥"},
+            {n:118, name:"Делистинг с биржи", effect:"Крипта −20%", flavor:"Провал означает, что вы купили на хаях, а теперь теряете всё.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:119, name:"Аирдроп", effect:"+50 000 ₽", flavor:"Бесплатные токены — это всегда приятно, но одновременно и подозрительно.", cat:"crypto", type:"income", marker:"🟢👥"},
+            {n:120, name:"Кошелёк заблокирован", effect:"Нельзя использовать крипту 2 хода", flavor:"Блокировка кошелька случается именно тогда, когда вам срочно нужны средства.", cat:"crypto", type:"neutral", marker:"⚪"},
+            {n:121, name:"Все продают! Паника!", effect:"Продажа крипты — за 30%", flavor:"Все вокруг продают в панике, и вы, конечно же, тоже. Спойлер: завтра всё вырастет.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:122, name:"Крипто-карта: новый стандарт", effect:"−5 000 ₽", flavor:"Переход на новые стандарты всегда означает, что вы будете платить больше.", cat:"crypto", type:"expense", marker:"👥"},
+            {n:123, name:"Крах крупной биржи (FTX 2.0)", effect:"Потеря 1 лота (🔐 Сейф: 0)", flavor:"История повторяется, и каждый раз это одинаково больно.", cat:"crypto", type:"expense", marker:"🔴"},
+            {n:124, name:"Криптой можно платить", effect:"Доход +50% навсегда", flavor:"Принятие крипты в магазинах — это шаг в будущее, который иногда даже работает.", cat:"crypto", type:"income", marker:"🟢👥"},
+            {n:125, name:"Налог на вывод средств", effect:"−10 000 ₽", flavor:"Вы наконец заработали, а государство тут как тут, чтобы забрать свою часть.", cat:"crypto", type:"expense", marker:"🔴👥"},
+            {n:126, name:"Замена зимней резины", effect:"−25 000 ₽", flavor:"И весна, и осень. Платите в любом сезоне.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:127, name:"Хранение резины", effect:"−10 000 ₽", flavor:"Платите сами, потому что хранить негде.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:128, name:"Мелкое ДТП", effect:"−20 000 ₽ (🛡️ КАСКО)", flavor:"Вы не виноваты, но платить всё равно придётся вам.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:129, name:"Штраф ГИБДД", effect:"−5 000 ₽", flavor:"Камера всё видит, помнит и безжалостно штрафует.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:130, name:"ОСАГО", effect:"−15 000 ₽", flavor:"Это не защита, это просто обязательный расход.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:131, name:"Эвакуатор после ДТП", effect:"−5 000 ₽ (🛡️ КАСКО)", flavor:"Принудительный отдых вашего автомобиля за ваш счёт.", cat:"expense", type:"expense", marker:"👤"},
+            {n:132, name:"Ремонт велосипеда", effect:"−10 000 ₽", flavor:"КАСКО на велосипед, к сожалению, не распространяется.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:133, name:"Эвакуатор за парковку", effect:"−5 000 ₽", flavor:"Эвакуатор увёз, а вы остались с пустыми карманами.", cat:"expense", type:"expense", marker:"👤"},
+            {n:134, name:"Лечение зубов", effect:"−30 000 ₽ (🏥 ДМС)", flavor:"Сладкая жизнь оказалась не такой уж сладкой для вашей эмали.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:135, name:"Лекарства", effect:"−10 000 ₽", flavor:"Таблетки не лечат, но делают ваш кошелёк значительно беднее.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:136, name:"Очки/линзы", effect:"−15 000 ₽", flavor:"Коррекция зрения — это исключительно ваши личные финансовые трудности.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:137, name:"Анализы", effect:"−10 000 ₽ (🏥 ДМС)", flavor:"Сдавайте бесплатно и с чувством глубокого удовлетворения.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:138, name:"Вызов врача", effect:"−5 000 ₽ (🏥 ДМС)", flavor:"Удобно, бесплатно и без очередей в поликлинике.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:139, name:"Стоматология ребёнку", effect:"−20 000 ₽", flavor:"Конфеты были вкусными, а счёт оказался совершенно безвкусным.", cat:"expense", type:"expense", marker:"👤"},
+            {n:140, name:"Фитнес-абонемент", effect:"−15 000 ₽", flavor:"Классическая история про абонемент, который работает на вас, а не вы на него.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:141, name:"Витамины", effect:"−5 000 ₽", flavor:"Это исключительно ваши личные расходы на надежду и здоровье.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:142, name:"Психолог", effect:"−10 000 ₽", flavor:"Психотерапия редко входит в базовый пакет, как и ваше спокойствие.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:143, name:"Массаж", effect:"−10 000 ₽", flavor:"Это приятная профилактика, но точно не лечение по страховке.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:144, name:"Школьная форма", effect:"−20 000 ₽", flavor:"Ребёнок износит это за месяц, как всегда и бывает.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:145, name:"Детский сад", effect:"−15 000 ₽", flavor:"Детский сад — это не только дети, но и бесконечные поборы.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:146, name:"Игрушки", effect:"−10 000 ₽", flavor:"Вы купили дорогую игрушку, а ребёнок с восторгом играет с коробкой.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:147, name:"Репетитор", effect:"−15 000 ₽", flavor:"Школа не научила, поэтому репетитор научит, но исключительно за деньги.", cat:"expense", type:"expense", marker:"👤"},
+            {n:148, name:"Секция спорта", effect:"−10 000 ₽", flavor:"Спорт — это здоровье, а для вас — дополнительные регулярные расходы.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:149, name:"Лагерь", effect:"−30 000 ₽", flavor:"Летний лагерь — это целый месяц абсолютной свободы для родителей.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:150, name:"Подарок на ДР", effect:"−10 000 ₽", flavor:"День рождения ребёнка — это праздник, от которого плачет ваш кошелёк.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:151, name:"Праздничный торт", effect:"−5 000 ₽", flavor:"Торт на праздник — это не обсуждаемая семейная традиция.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:152, name:"Няня на вечер", effect:"−5 000 ₽", flavor:"Вечер вдвоём бесценен, но няня стоит вполне конкретных денег.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:153, name:"Детская одежда", effect:"−15 000 ₽", flavor:"Дети растут с пугающей скоростью, а одежда изнашивается ещё быстрее.", cat:"expense", type:"expense", marker:"👤"},
+            {n:154, name:"Ремонт стиралки", effect:"−15 000 ₽", flavor:"Стиралка решила отдохнуть, и ваши руки теперь вынуждены её заменять.", cat:"expense", type:"expense", marker:"👤"},
+            {n:155, name:"Протекшая труба", effect:"−10 000 ₽ (🏠 Недвижимость)", flavor:"Соседи снизу теперь точно знают ваш интерьер и уровень стресса.", cat:"expense", type:"expense", marker:"👤"},
+            {n:156, name:"Холодильник", effect:"−15 000 ₽", flavor:"Холодильник сломался, и продукты разделили ваше глубокое разочарование.", cat:"expense", type:"expense", marker:"👤"},
+            {n:157, name:"Микроволновка", effect:"−8 000 ₽", flavor:"Сгорела, так что покупайте новую исключительно за свой счёт.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:158, name:"Телевизор", effect:"−15 000 ₽", flavor:"Сгорела матрица, и это категорически не страховой случай.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:159, name:"Мебель", effect:"−30 000 ₽", flavor:"Диван просел, и пришло время менять его за свой счёт.", cat:"expense", type:"expense", marker:"👤"},
+            {n:160, name:"Сантехника", effect:"−15 000 ₽", flavor:"Смеситель потёк, и это классический естественный износ.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:161, name:"Кондиционер", effect:"−15 000 ₽", flavor:"Сломался в жару, и страховка это, увы, не покрывает.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:162, name:"Пылесос", effect:"−10 000 ₽", flavor:"Старый пылесос окончательно умер, покупайте новый.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:163, name:"Кофемашина", effect:"−15 000 ₽", flavor:"Сломалась, но это точно не пожар и не потоп.", cat:"expense", type:"expense", marker:"👤"},
+            {n:164, name:"Принтер", effect:"−10 000 ₽", flavor:"Замял бумагу и сгорел. Покупайте новый.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:165, name:"Роутер", effect:"−5 000 ₽", flavor:"Перестал работать, и это печальный естественный износ.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:166, name:"Сломался замок", effect:"−5 000 ₽", flavor:"Замок просто старый, и страховка тут совершенно не поможет.", cat:"expense", type:"expense", marker:"👤"},
+            {n:167, name:"Проводка/пожар", effect:"−20 000 ₽ (🏠 Недвижимость)", flavor:"Проводка решила устроить фейерверк, и это закончилось неудачно.", cat:"expense", type:"expense", marker:"👤"},
+            {n:168, name:"Крыша гаража", effect:"−20 000 ₽", flavor:"Крыша течёт, гараж страдает, а ремонт ложится на ваши плечи.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:169, name:"Взлом замка", effect:"−10 000 ₽ (🏠 Недвижимость)", flavor:"Кто-то очень хотел к вам в гости, но пришёл без приглашения.", cat:"expense", type:"expense", marker:"👤"},
+            {n:170, name:"Продукты на месяц", effect:"−20 000 ₽", flavor:"Полный холодильник — это залог спокойной жизни.", cat:"expense", type:"expense", marker:"👤"},
+            {n:171, name:"Коммуналка", effect:"−10 000 ₽", flavor:"Квитанция ЖКХ — это ваш регулярный ежемесячный стресс.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:172, name:"Смартфон", effect:"−40 000 ₽", flavor:"Новый телефон открывает новые возможности и закрывает бюджет.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:173, name:"Интернет/ТВ за год", effect:"−12 000 ₽", flavor:"Годовая подписка всегда выгоднее, даже если вы ей не пользуетесь.", cat:"expense", type:"expense", marker:"👤"},
+            {n:174, name:"Зимняя одежда", effect:"−25 000 ₽", flavor:"Зимой без куртки никак, а без денег тем более.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:175, name:"Бытовая химия", effect:"−5 000 ₽", flavor:"Чистота требует средств, и эти средства требует магазин.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:176, name:"Мобильная связь", effect:"−2 000 ₽", flavor:"Тариф продлён, связь есть, а денег стало меньше.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:177, name:"Косметика", effect:"−10 000 ₽", flavor:"Красота требует вложений, и вы щедро её инвестируете.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:178, name:"Посуда", effect:"−10 000 ₽", flavor:"Старые тарелки разбились, и вы купили новые.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:179, name:"Постельное бельё", effect:"−10 000 ₽", flavor:"Свежее бельё гарантирует свежий сон и пустой кошелёк.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:180, name:"Налоги за квартиру", effect:"−5 000 ₽", flavor:"Налог на имущество — это ваша ежегодная и неизбежная дань.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:181, name:"Юрист", effect:"−20 000 ₽", flavor:"Консультация юриста стоит дорого, но иногда это жизненно необходимо.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:182, name:"Клининг", effect:"−5 000 ₽", flavor:"Генеральная уборка — это сомнительное удовольствие за ваши деньги.", cat:"expense", type:"expense", marker:"👤"},
+            {n:183, name:"Курсы повышения", effect:"−15 000 ₽", flavor:"Обучение — это инвестиция в себя, даже если вы ничего не запомнили.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:184, name:"Цветы", effect:"−5 000 ₽", flavor:"Цветы для любимой — это не обсуждаемая ежегодная традиция.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:185, name:"Подписки", effect:"−3 000 ₽", flavor:"Сервисы, музыка и кино списывают деньги ежемесячно и незаметно.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:186, name:"Рюкзак/сумка", effect:"−10 000 ₽", flavor:"Старая сумка порвалась, и новая нужна вам прямо сейчас.", cat:"expense", type:"expense", marker:"👤"},
+            {n:187, name:"Зоотовары", effect:"−10 000 ₽", flavor:"Кот есть, а значит, расходы есть всегда и везде.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:188, name:"Парковка", effect:"−5 000 ₽", flavor:"Парковка в центре — это непозволительная роскошь.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:189, name:"Хозтовары", effect:"−5 000 ₽", flavor:"Мелочи для дома всегда нужны, и всегда неожиданно.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:190, name:"Угнали велосипед", effect:"−30 000 ₽", flavor:"Велосипед украден, и КАСКО на него, увы, не распространяется.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:191, name:"Соседи затопили", effect:"−20 000 ₽ (🏠 Недвижимость)", flavor:"Соседи сделали вам ремонт, не спрашивая и совершенно не так, как вы хотели.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:192, name:"Потеря ключей", effect:"−5 000 ₽", flavor:"Ключи потеряны, мастер спас ситуацию, но не ваш бюджет.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:193, name:"Разбился экран телефона", effect:"−15 000 ₽", flavor:"Экран телефона разбился, и ремонт теперь исключительно за ваш счёт.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:194, name:"Штраф за парковку", effect:"−5 000 ₽", flavor:"Не там припарковался, и штраф прилетел быстрее, чем вы думали.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:195, name:"Комиссия банка", effect:"−3 000 ₽", flavor:"Банк взял комиссию, и это всегда невероятно неприятно.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:196, name:"Порча имущества", effect:"−10 000 ₽ (🏠 Недвижимость)", flavor:"Вандализм или кража, но хорошая страховка всё это покрыла.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:197, name:"Угон автомобиля", effect:"−50 000 ₽ (🛡️ КАСКО)", flavor:"Поздравляем, у вас внезапно появилось больше времени для пеших прогулок.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:198, name:"Стационарное лечение", effect:"−25 000 ₽ (🏥 ДМС)", flavor:"Больница — это такой отель, только без звёзд и с болезнями.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:199, name:"Плановая операция", effect:"−30 000 ₽ (🏥 ДМС)", flavor:"План стать здоровым стоит дорого, но оно определённо того стоит.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:200, name:"Водопроводные фильтры", effect:"−5 000 ₽", flavor:"Фильтры пора менять, и это просто рутинное обслуживание.", cat:"expense", type:"expense", marker:"👤"},
+            {n:201, name:"Ремонт замка (износ)", effect:"−5 000 ₽", flavor:"Замок просто заело, и это классический естественный износ.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:202, name:"Падение дерева на авто", effect:"−20 000 ₽ (🛡️ КАСКО)", flavor:"Дерево тоже хотело машину, и теперь у него она есть.", cat:"expense", type:"expense", marker:"👤"},
+            {n:203, name:"Пожар автомобиля", effect:"−30 000 ₽ (🛡️ КАСКО)", flavor:"Ваша машина стала слишком горячей, и это совершенно буквально.", cat:"expense", type:"expense", marker:"👤"},
+            {n:204, name:"Подарок учителю", effect:"−5 000 ₽", flavor:"Подарок учителю на день рождения — это абсолютно обязательно.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:205, name:"Ремонт ноутбука", effect:"−20 000 ₽", flavor:"Ноутбук завис, и вы несёте его в сервис за свой счёт.", cat:"expense", type:"expense", marker:"🔴👤"},
+            {n:206, name:"Замена экрана планшета", effect:"−15 000 ₽", flavor:"Экран планшета разбился, и замена теперь полностью за ваш счёт.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:207, name:"Вандализм на авто", effect:"−10 000 ₽ (🛡️ КАСКО)", flavor:"Кто-то очень хотел сделать вашу машину уникальным арт-объектом.", cat:"expense", type:"expense", marker:"👤"},
+            {n:208, name:"Повреждение градом", effect:"−15 000 ₽ (🛡️ КАСКО)", flavor:"Природа решила сделать вашей машине массаж, и использовала для этого камни.", cat:"expense", type:"expense", marker:"🔴"},
+            {n:209, name:"Замена счётчиков воды", effect:"−5 000 ₽", flavor:"Счётчики пора менять, и закон категорически этого требует.", cat:"expense", type:"expense", marker:"👤"},
+            {n:210, name:"Премия на работе", effect:"+50 000 ₽", flavor:"Премия — это когда вам дали подачку, и вы делаете вид, что рады.", cat:"event", type:"income", marker:"👤"},
+            {n:211, name:"Возврат налога", effect:"+30 000 ₽", flavor:"Налоговая вернула деньги, и это ощущается как настоящее чудо.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:212, name:"Нашли деньги в куртке", effect:"+5 000 ₽", flavor:"Вы нашли деньги в старой куртке и внезапно почувствовали себя гением финансовой грамотности.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:213, name:"Выигрыш в лотерею", effect:"+10 000 ₽", flavor:"Выигрыш в лотерею — это маленькая удача и большая зависть всех ваших друзей.", cat:"event", type:"income", marker:"👤"},
+            {n:214, name:"Подарок от родственников", effect:"+50 000 ₽", flavor:"Родные помогли, и вы испытываете одновременно благодарность и лёгкую неловкость.", cat:"event", type:"income", marker:"🟢"},
+            {n:215, name:"Продажа хлама на Авито", effect:"+15 000 ₽", flavor:"Продажа хлама на Авито превратилась в реальные деньги в вашем кармане.", cat:"event", type:"income", marker:"🟢"},
+            {n:216, name:"Кэшбэк за квартал", effect:"+25 000 ₽", flavor:"Банк вернул часть денег, и это ощущается как настоящее чудо.", cat:"event", type:"income", marker:"👤"},
+            {n:217, name:"Возврат переплаты ЖКХ", effect:"+15 000 ₽", flavor:"ЖКХ пересчитали и вернули деньги. Редко, но зато очень метко.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:218, name:"Ремонт по гарантии", effect:"+10 000 ₽", flavor:"Гарантия сработала, и вам даже вернули деньги.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:219, name:"Повышение зарплаты", effect:"+10% к доходу навсегда", flavor:"Вы оказались настолько круты, что вам действительно повысили зарплату.", cat:"event", type:"income", marker:"👤"},
+            {n:220, name:"Наследство", effect:"+100 000 ₽", flavor:"Троюродный дядя, которого вы видели один раз в 1998 году, внезапно стал вашим лучшим финансовым помощником.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:221, name:"Выплата по страховке", effect:"+40 000 ₽", flavor:"Страховка выплатила деньги, и это настоящее спасение.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:222, name:"Ошибка в квитанции", effect:"+5 000 ₽", flavor:"Квитанция ошиблась, и на этот раз исключительно в вашу пользу.", cat:"event", type:"income", marker:"🟢"},
+            {n:223, name:"Бесплатное обучение", effect:"+15 000 ₽ сертификат", flavor:"Обучение оказалось бесплатным, да ещё и с приятным бонусом.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:224, name:"Вернули старый долг", effect:"+20 000 ₽", flavor:"Должник внезапно вспомнил о долге, и это настоящее чудо.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:225, name:"Случайная находка", effect:"+10 000 ₽", flavor:"Вы нашли деньги, и это чистая, незамутнённая удача.", cat:"event", type:"income", marker:"👤"},
+            {n:226, name:"Бонус за перевыполнение", effect:"+30 000 ₽", flavor:"Вы переработали, и бонус стал достойной компенсацией.", cat:"event", type:"income", marker:"🟢"},
+            {n:227, name:"Подарочный сертификат", effect:"+10 000 ₽", flavor:"Сертификат оказался весьма приятным и полезным подарком.", cat:"event", type:"income", marker:"🟢"},
+            {n:228, name:"Бесплатная юрконсультация", effect:"+10 000 ₽", flavor:"Юрист помог бесплатно, и вам невероятно повезло.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:229, name:"Выиграли конкурс", effect:"+15 000 ₽", flavor:"Конкурс выигран, и приз теперь законно ваш.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:230, name:"Возврат товара в магазин", effect:"+25 000 ₽", flavor:"Вы вернули не подошедший товар, и деньги магическим образом вернулись тоже.", cat:"event", type:"income", marker:"🟢"},
+            {n:231, name:"Матпомощь от работы", effect:"+20 000 ₽", flavor:"Работа помогла в трудную минуту, и вам хочется сказать спасибо.", cat:"event", type:"income", marker:"🟢"},
+            {n:232, name:"Забытая карта с деньгами", effect:"+10 000 ₽", flavor:"Вы нашли старую карту с деньгами, и в это до сих пор не верится.", cat:"event", type:"income", marker:"🟢"},
+            {n:233, name:"Бесплатная путёвка", effect:"+20 000 ₽", flavor:"Путёвка досталась бесплатно, и деньги остались в кармане.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:234, name:"Внеплановые дивиденды", effect:"+15 000 ₽", flavor:"Дивиденды пришли, и это всегда безумно приятно.", cat:"event", type:"income", marker:"👤"},
+            {n:235, name:"Подработка в выходной", effect:"+10 000 ₽", flavor:"Выходной прошёл с пользой, и деньги не заставили себя ждать.", cat:"event", type:"income", marker:"🟢"},
+            {n:236, name:"Возврат залога", effect:"+30 000 ₽", flavor:"Залог наконец вернули, и эти деньги снова ваши.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:237, name:"Бесплатная доставка", effect:"+5 000 ₽", flavor:"Доставка оказалась бесплатной, а кэшбэк весьма приятным.", cat:"event", type:"income", marker:"🟢"},
+            {n:238, name:"Выиграли спор с ЖКХ", effect:"+10 000 ₽", flavor:"ЖКХ проиграло спор, а вы заслуженно выиграли.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:239, name:"Подарок от работодателя", effect:"+10 000 ₽", flavor:"Работодатель внезапно порадовал, и это греет душу.", cat:"event", type:"income", marker:"👤"},
+            {n:240, name:"Купон на скидку 50%", effect:"Следующая покупка актива ×0.5", flavor:"Купон на скидку 50% — это настоящая и ощутимая экономия.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:241, name:"Бесплатное ТО авто", effect:"+15 000 ₽", flavor:"ТО оказалось бесплатным, машина рада, и кошелёк тоже.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:242, name:"Возврат за отмену услуги", effect:"+20 000 ₽", flavor:"Услугу отменили, но деньги исправно вернули.", cat:"event", type:"income", marker:"🟢"},
+            {n:243, name:"Софинансирование", effect:"+30 000 ₽", flavor:"Государство помогло, и это неожиданно приятно.", cat:"event", type:"income", marker:"👤"},
+            {n:244, name:"Возврат за подписку", effect:"+8 000 ₽", flavor:"Вы отменили подписку, и деньги за остаток года вернули.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:245, name:"Вклад 2010 года созрел", effect:"+50 000 ₽", flavor:"Вклад 2010 года наконец созрел. Лучше поздно, чем никогда.", cat:"event", type:"income", marker:"🟢"},
+            {n:246, name:"Разовое пособие", effect:"+10 000 ₽", flavor:"Пособие пришло вовремя, и это реальная поддержка.", cat:"event", type:"income", marker:"👤"},
+            {n:247, name:"Выигрыш тендера", effect:"+40 000 ₽", flavor:"Тендер выигран, и контракт теперь законно ваш.", cat:"event", type:"income", marker:"🟢"},
+            {n:248, name:"Финансовый аудит", effect:"−100 000 ₽, закрывает 20% долгов", flavor:"Аудитор нашёл законный способ избавиться от долга. Это дорогая, но выгодная инвестиция в спокойствие.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:249, name:"Компенсация за задержку з/п", effect:"+20 000 ₽", flavor:"Работодатель задержал зарплату, но зато выплатил компенсацию.", cat:"event", type:"income", marker:"🟢"},
+            {n:250, name:"Подарок на юбилей", effect:"+30 000 ₽", flavor:"Коллеги щедро скинулись на юбилейный подарок.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:251, name:"Выигрыш в конкурсе соцсетей", effect:"+8 000 ₽", flavor:"Репост, лайк и подписка принесли вам неожиданную победу.", cat:"event", type:"income", marker:"👤"},
+            {n:252, name:"Подарок от банка", effect:"+15 000 ₽", flavor:"Банк вернул процент по тратам, и это безумно приятно.", cat:"event", type:"income", marker:"🟢👤"},
+            {n:253, name:"Свобода", effect:"Пассивный доход > 150 000 ₽/мес", flavor:"Финансовая свобода — это высшая и единственная цель.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:254, name:"Капиталист", effect:"15 000 000 ₽ наличными", flavor:"15 миллионов наличными в тумбочке.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:255, name:"Магнат", effect:"3 объекта недвижимости без долгов", flavor:"Три квартиры без долгов — это три личные крепости.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:256, name:"Крипто-кит", effect:"5 лотов крипты", flavor:"Вы официально стали крипто-китом и повелителем блокчейна.", cat:"dream", type:"neutral", marker:"👤"},
+            {n:257, name:"Бизнесмен", effect:"2 бизнеса с доходом >100к/мес", flavor:"Два бизнеса приносят двойную свободу и двойную ответственность.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:258, name:"Чистый лист", effect:"0 ₽ пассивов + 5 000 000 ₽ наличными", flavor:"Без долгов и с деньгами — это абсолютный идеал.", cat:"dream", type:"neutral", marker:"👤"},
+            {n:259, name:"Инвестор", effect:"Портфель на 10 000 000 ₽", flavor:"Портфель на миллионы выглядит предельно серьёзно.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:260, name:"Ранняя пенсия", effect:"Пассивный доход покрывает расходы ×2", flavor:"Выйти на пенсию в 35 лет — это настоящая мечта.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:261, name:"Мега-сделка", effect:"Один актив >200 000 ₽/мес", flavor:"Один единственный актив кормит вас всю оставшуюся жизнь.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:262, name:"Семейный капитал", effect:"Ребёнок + 5 000 000 ₽", flavor:"Семья и капитал — это нерушимая основа счастья.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:263, name:"Загородная жизнь", effect:"Дом + 2 000 000 ₽", flavor:"Дом в деревне — это вечная русская мечта.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:264, name:"Цифровой кочевник", effect:"3 000 000 ₽ + 0 кредитов", flavor:"Свобода работать откуда угодно без единого кредита.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:265, name:"Коллекционер", effect:"5 разных видов активов", flavor:"Разнообразие активов — это ключ к настоящей стабильности.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:266, name:"Меценат", effect:">500 000 ₽ на благотворительность", flavor:"Помогать другим — это благородно и правильно.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:267, name:"Подушка на 10 лет", effect:"15 000 000 ₽", flavor:"Деньги, которые можно просто не тратить.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:268, name:"Медийная империя", effect:"3 объекта малого бизнеса", flavor:"Сеть кофеен, ПВЗ и вендинга — это ваша личная империя.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:269, name:"Торговый магнат", effect:"5 мелких возможностей с доходом", flavor:"Пять источников дохода — это надёжно и прибыльно.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:270, name:"Крипто-энтузиаст", effect:"3 вида крипты + Крипто-сейф", flavor:"Крипто-портфель с сейфом — это правильная диверсификация.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:271, name:"Ипотечный ниндзя", effect:"Ипотека закрыта + 2 000 000 ₽", flavor:"Без ипотеки и с финансовой подушкой — вы настоящий ниндзя.", cat:"dream", type:"neutral", marker:"⚪"},
+            {n:272, name:"Абсолютный ноль", effect:"0 пассивов, 0 страховок, 10 000 000 ₽", flavor:"Абсолютная финансовая чистота и дзен.", cat:"dream", type:"neutral", marker:"⚪👤"},
+            {n:273, name:"Рубль упал: крипта взлетела, импорт подорожал", effect:"Крипта +30%, все платят 10 000 ₽", flavor:"Рубль упал, крипта выросла, импорт подорожал — вокруг настоящий хаос.", cat:"global", type:"expense", marker:"🔴👥"},
+            {n:274, name:"Дефицит оборудования", effect:"Владельцы любого бизнеса платят 50 000 ₽", flavor:"Оборудования нет, бизнес плачет, и вы тоже.", cat:"global", type:"expense", marker:"🔴👥"},
+            {n:275, name:"ЦБ поднял ключевую ставку", effect:"Кредиты +5%", flavor:"ЦБ снова поднял ставку, и все знают, к чему это ведёт.", cat:"global", type:"expense", marker:"👥"},
+            {n:276, name:"Нефть упала, бензин вырос", effect:"Расходы +5 000 ₽ навсегда", flavor:"Нефть упала, бензин вырос. Логику вы здесь не найдёте.", cat:"global", type:"expense", marker:"🔴👥"},
+            {n:277, name:"Налоговая амнистия", effect:"Списание долга до 50 000 ₽", flavor:"Налоговая амнистия — это действительно редкая милость.", cat:"global", type:"income", marker:"🟢👤"},
+            {n:278, name:"Цифровой рубль", effect:"Крипта заморожена 1 круг", flavor:"ЦБ взял крипту под жёсткий контроль.", cat:"global", type:"neutral", marker:"⚪"},
+            {n:279, name:"Санкции на логистику", effect:"Покупки активов +20% на 1 круг", flavor:"Санкции ударили по логистике и по вашему карману.", cat:"global", type:"expense", marker:"🔴"},
+            {n:280, name:"Импортозамещение работает", effect:"Доход от бизнеса/акций ×2", flavor:"Импортозамещение внезапно начало реально работать.", cat:"global", type:"income", marker:"👥"},
+            {n:281, name:"Владельцы бизнеса, заплатите 30 000 ₽", effect:"Разовый штраф 30 000 ₽", flavor:"Массовые проверки: проверяющие пришли и ушли с деньгами.", cat:"global", type:"expense", marker:"🔴"},
+            {n:282, name:"Инфляция разогналась", effect:"Базовые расходы +10% навсегда", flavor:"Инфляция решила разогнаться. Пристегнитесь.", cat:"global", type:"expense", marker:"🔴"},
+            {n:283, name:"Капитал уезжает за границу", effect:"Наличные >5 млн −20%", flavor:"Деньги уезжают за границу, и исключительно без вас.", cat:"global", type:"expense", marker:"🔴👤"},
+            {n:284, name:"IT — приоритет государства", effect:"IT-разработчики и IT-бизнес +50 000 ₽, остальные −10 000 ₽", flavor:"IT — это безусловный приоритет государства.", cat:"global", type:"income", marker:"🟢👥"},
+            {n:285, name:"Недвижимость в кризисе", effect:"Продажа только за 20% на 1 круг", flavor:"Недвижимость в глубоком кризисе.", cat:"global", type:"expense", marker:"👥"},
+            {n:286, name:"Валютный контроль", effect:"Нет новых кредитов 1 круг", flavor:"Кредиты закрыты, экономика на замке.", cat:"global", type:"neutral", marker:"⚪👥"},
+            {n:287, name:"Туризм внутри страны — в моде", effect:"+30 000 ₽ разово, если есть недвижимость с пассивным доходом", flavor:"Туризм внутри страны внезапно стал главным трендом.", cat:"global", type:"income", marker:"🟢"},
+            {n:288, name:"Глобальная кибератака", effect:"−50 000 ₽ (🏠 Страховка: 0 ₽)", flavor:"Глобальная кибератака — это реальная угроза для всех.", cat:"global", type:"expense", marker:"🔴"}
+        ];
+        
+        const professions = [
+            { name: 'Учитель', salary: 60000, debt: 2500000, payment: 20000, expenses: 25000, savings: 30000 },
+            { name: 'Офис-менеджер', salary: 80000, debt: 3000000, payment: 25000, expenses: 40000, savings: 75000 },
+            { name: 'Врач', salary: 100000, debt: 3500000, payment: 30000, expenses: 50000, savings: 120000 },
+            { name: 'IT-разработчик', salary: 160000, debt: 5000000, payment: 40000, expenses: 90000, savings: 150000 },
+            { name: 'Госслужащий', salary: 90000, debt: 3000000, payment: 25000, expenses: 45000, savings: 180000 },
+            { name: 'Фрилансер', salary: 70000, debt: 2000000, payment: 15000, expenses: 35000, savings: 60000 },
+            { name: 'Владелец магазина', salary: 110000, debt: 4000000, payment: 35000, expenses: 55000, savings: 150000 },
+            { name: 'Блогер/Стример', salary: 130000, debt: 4500000, payment: 35000, expenses: 70000, savings: 90000 },
+            { name: 'Вахтовик', salary: 150000, debt: 3500000, payment: 30000, expenses: 80000, savings: 240000 }
+        ];
+        
+        let currentFilter = 'all';
+        
+        function formatMoney(n) { return new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽'; }
+        
+        function showSection(sectionName, btn) {
+            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+            document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.getElementById(sectionName).classList.add('active');
+            if (btn) btn.classList.add('active');
+        }
+        
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(function(btn) {
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            filterCards();
+        }
+        
+        function filterCards() {
+            var searchInput = document.getElementById('searchInput');
+            var search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            var filtered = allCards.filter(function(card) {
+                var matchFilter = currentFilter === 'all' || card.cat === currentFilter;
+                var matchSearch = !search || card.n.toString() === search || card.n.toString().includes(search) || card.name.toLowerCase().includes(search);
+                return matchFilter && matchSearch;
+            });
+            document.getElementById('statsText').innerText = 'Показано: ' + filtered.length + ' из ' + allCards.length + ' карт';
+            document.getElementById('cardsList').innerHTML = filtered.map(function(card) {
+                var typeClass = card.type === 'income' ? 'income' : card.type === 'expense' ? 'expense' : card.type === 'asset' ? 'asset' : 'neutral';
+                var effectClass = card.effect.indexOf('−') !== -1 || card.effect.indexOf('-') !== -1 ? 'negative' : '';
+                return '<div class="card-item ' + typeClass + '">' +
+                    '<div class="card-header">' +
+                        '<span class="card-number">№' + card.n + ' <span class="card-marker">' + card.marker + '</span></span>' +
+                        '<span class="card-category">' + getCategoryName(card.cat) + '</span>' +
+                    '</div>' +
+                    '<div class="card-name">' + card.name + '</div>' +
+                    '<div class="card-effect ' + effectClass + '">' + card.effect + '</div>' +
+                    '<div class="card-flavor">' + card.flavor + '</div>' +
+                '</div>';
+            }).join('');
+        }
+        
+        function getCategoryName(cat) {
+            var names = { 
+                small: 'Мелкие возможности', 
+                big: 'Крупные возможности', 
+                market: 'Рынок общий', 
+                crypto: 'Крипта', 
+                expense: 'Траты', 
+                event: 'События', 
+                dream: 'Мечты', 
+                global: 'Глобальный рынок' 
+            };
+            return names[cat] || cat;
+        }
+        
+        document.getElementById('professionsTable').innerHTML = professions.map(function(p) {
+            return '<tr>' +
+                '<td><strong>' + p.name + '</strong></td>' +
+                '<td>' + formatMoney(p.salary) + '</td>' +
+                '<td>' + formatMoney(p.debt) + '</td>' +
+                '<td>' + formatMoney(p.payment) + '/мес</td>' +
+                '<td>' + formatMoney(p.expenses) + '</td>' +
+                '<td>' + formatMoney(p.savings) + '</td>' +
+            '</tr>';
+        }).join('');
+        
+        filterCards();
+    </script>
+</body>
+</html>
